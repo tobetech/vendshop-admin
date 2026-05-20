@@ -3706,6 +3706,11 @@
       }
 
       function showPage(page) {
+        if (window.innerWidth <= 768) {
+          sidebarOpen = false;
+          document.getElementById("sidebar").classList.remove("open");
+          document.getElementById("main").classList.remove("shifted");
+        }
         document
           .querySelectorAll(".screen")
           .forEach((s) => s.classList.remove("active"));
