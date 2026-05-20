@@ -3762,6 +3762,7 @@
         if (page === "admin-logs") loadAdminLogs();
         if (page === "topup") {
           loadAdminTopupHistory();
+          loadPromotions();
           atMember = null;
           document.getElementById("at-member-result").style.display = "none";
         }
