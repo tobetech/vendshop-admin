@@ -585,6 +585,11 @@
         .main.shifted {
           margin-left: 0;
         }
+        .topbar {
+          position: sticky;
+          top: 0;
+          z-index: 50;
+        }
         .stats-grid {
           grid-template-columns: 1fr 1fr;
         }
@@ -595,6 +600,12 @@
         .machine-actions {
           width: 100%;
           justify-content: flex-start;
+        }
+        main.shifted {
+          margin-left: 0;
+        }
+        .screen.active {
+          display: block !important;
         }
         table {
           font-size: 12px;
