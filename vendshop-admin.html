@@ -880,6 +880,24 @@
             </svg>
             ลงทะเบียนสมาชิก
           </button>
+
+          <button
+            class="nav-item"
+            onclick="showPage('change-card')"
+            id="nav-change-card"
+          >
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <rect x="2" y="5" width="20" height="14" rx="2" />
+              <line x1="2" y1="10" x2="22" y2="10" />
+            </svg>
+            เปลี่ยนบัตรสมาชิก
+          </button>
+
           <button
             class="nav-item"
             onclick="showPage('whitelist')"
@@ -2560,6 +2578,256 @@
           </div>
         </div>
 
+        <!-- CHANGE CARD -->
+        <div class="screen" id="page-change-card">
+          <div class="page-header">
+            <h2>เปลี่ยนบัตรสมาชิก</h2>
+          </div>
+
+          <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px">
+            <!-- ซ้าย: ค้นหาสมาชิกและ MQTT -->
+            <div
+              style="
+                background: #1e293b;
+                border-radius: 14px;
+                padding: 24px;
+                border: 1px solid #334155;
+              "
+            >
+              <div
+                style="
+                  font-size: 15px;
+                  font-weight: 600;
+                  color: #f1f5f9;
+                  margin-bottom: 16px;
+                "
+              >
+                👤 ข้อมูลสมาชิก
+              </div>
+
+              <div class="input-group">
+                <span class="field-label">หมายเลขโทรศัพท์</span>
+                <div style="display: flex; gap: 8px">
+                  <div class="input-wrap" style="flex: 1">
+                    <input
+                      type="text"
+                      id="cc-phone"
+                      placeholder="0812345678"
+                      maxlength="10"
+                      oninput="this.value = this.value.replace(/\D/g, '')"
+                      onkeydown="
+                        if (event.key === 'Enter') searchMemberChangeCard();
+                      "
+                    />
+                  </div>
+                  <button
+                    class="btn-sm"
+                    onclick="searchMemberChangeCard()"
+                    style="flex-shrink: 0; padding: 0 16px"
+                  >
+                    ค้นหา
+                  </button>
+                </div>
+              </div>
+
+              <div
+                id="cc-member-result"
+                style="
+                  display: none;
+                  background: #0f172a;
+                  border-radius: 10px;
+                  padding: 14px;
+                  margin-bottom: 16px;
+                "
+              >
+                <div style="font-size: 13px; color: #64748b">สมาชิก</div>
+                <div
+                  style="font-size: 16px; font-weight: 700; color: #f1f5f9"
+                  id="cc-member-name"
+                >
+                  -
+                </div>
+                <div style="font-size: 13px; color: #64748b; margin-top: 4px">
+                  บัตรปัจจุบัน:
+                  <span
+                    style="color: #60a5fa; font-family: monospace"
+                    id="cc-current-uid"
+                    >-</span
+                  >
+                </div>
+              </div>
+
+              <div class="msg-error" id="cc-search-err"></div>
+
+              <!-- MQTT Section -->
+              <div id="cc-mqtt-section" style="display: none">
+                <div
+                  style="border-top: 1px solid #334155; margin: 16px 0"
+                ></div>
+                <div
+                  style="
+                    font-size: 14px;
+                    font-weight: 600;
+                    color: #f1f5f9;
+                    margin-bottom: 12px;
+                  "
+                >
+                  📡 Register Node REG-01
+                </div>
+
+                <div
+                  style="
+                    display: flex;
+                    align-items: center;
+                    gap: 8px;
+                    margin-bottom: 12px;
+                  "
+                >
+                  <div
+                    id="cc-mqtt-dot"
+                    style="
+                      width: 10px;
+                      height: 10px;
+                      border-radius: 50%;
+                      background: #334155;
+                      flex-shrink: 0;
+                    "
+                  ></div>
+                  <span
+                    id="cc-mqtt-status"
+                    style="font-size: 13px; color: #64748b"
+                    >ยังไม่ได้เชื่อมต่อ</span
+                  >
+                </div>
+
+                <div
+                  style="
+                    background: #0f172a;
+                    border-radius: 12px;
+                    padding: 16px;
+                    text-align: center;
+                    margin-bottom: 12px;
+                    border: 2px dashed #334155;
+                  "
+                  id="cc-uid-box"
+                >
+                  <div
+                    style="font-size: 13px; color: #64748b; margin-bottom: 8px"
+                  >
+                    UID บัตรใหม่
+                  </div>
+                  <div
+                    style="
+                      font-size: 20px;
+                      font-weight: 700;
+                      font-family: monospace;
+                      color: #60a5fa;
+                      letter-spacing: 2px;
+                    "
+                    id="cc-uid-display"
+                  >
+                    รอแตะบัตร...
+                  </div>
+                </div>
+
+                <div style="display:flex;gap:8px;margin-bottom:8px;">
+  <button class="btn-sm success" onclick="startCCSession()">🟢 เริ่ม Session</button>
+  <button class="btn-sm danger" onclick="stopCCSession()">🔴 หยุด Session</button>
+</div>
+              </div>
+            </div>
+
+            <!-- ขวา: ยืนยันการเปลี่ยนบัตร -->
+            <div
+              style="
+                background: #1e293b;
+                border-radius: 14px;
+                padding: 24px;
+                border: 1px solid #334155;
+              "
+            >
+              <div
+                style="
+                  font-size: 15px;
+                  font-weight: 600;
+                  color: #f1f5f9;
+                  margin-bottom: 16px;
+                "
+              >
+                🔄 ยืนยันการเปลี่ยนบัตร
+              </div>
+
+              <div id="cc-confirm-section" style="display: none">
+                <div
+                  style="
+                    background: #0f172a;
+                    border-radius: 10px;
+                    padding: 14px;
+                    margin-bottom: 16px;
+                  "
+                >
+                  <div
+                    style="font-size: 12px; color: #64748b; margin-bottom: 8px"
+                  >
+                    สรุปการเปลี่ยนบัตร
+                  </div>
+                  <div
+                    style="font-size: 13px; color: #94a3b8; margin-bottom: 4px"
+                  >
+                    สมาชิก:
+                    <span
+                      style="color: #f1f5f9; font-weight: 600"
+                      id="cc-sum-name"
+                      >-</span
+                    >
+                  </div>
+                  <div
+                    style="font-size: 13px; color: #94a3b8; margin-bottom: 4px"
+                  >
+                    บัตรเดิม:
+                    <span
+                      style="color: #f87171; font-family: monospace"
+                      id="cc-sum-old-uid"
+                      >-</span
+                    >
+                  </div>
+                  <div style="font-size: 13px; color: #94a3b8">
+                    บัตรใหม่:
+                    <span
+                      style="color: #4ade80; font-family: monospace"
+                      id="cc-sum-new-uid"
+                      >-</span
+                    >
+                  </div>
+                </div>
+
+                <div class="msg-error" id="cc-err"></div>
+                <div
+                  id="cc-success"
+                  style="
+                    display: none;
+                    background: #052e16;
+                    border: 1px solid #14532d;
+                    border-radius: 10px;
+                    padding: 10px 14px;
+                    color: #4ade80;
+                    font-size: 13px;
+                    margin-bottom: 16px;
+                  "
+                ></div>
+
+                <button class="btn-primary" onclick="saveChangeCard()">
+                  🔄 ยืนยันเปลี่ยนบัตร
+                </button>
+              </div>
+
+              <div id="cc-waiting" style="color: #64748b; font-size: 13px">
+                กรุณาค้นหาสมาชิกและแตะบัตรใหม่ก่อนครับ
+              </div>
+            </div>
+          </div>
+        </div>
+
         <!-- WHITELIST -->
         <div class="screen" id="page-whitelist">
           <div class="page-header">
@@ -2639,43 +2907,156 @@
 
         <!-- WHITELIST MODAL -->
         <div class="modal-overlay" id="whitelist-modal">
-          <div class="modal">
+          <div class="modal" style="max-width: 500px">
             <h3 id="wl-modal-title">เพิ่มบัตร Whitelist</h3>
             <input type="hidden" id="wl-edit-id" />
-            <div class="input-group">
-              <span class="field-label">UID บัตร</span>
-              <div class="input-wrap">
-                <input
-                  type="text"
-                  id="wl-uid"
-                  placeholder="XX:XX:XX:XX"
-                  maxlength="11"
-                  oninput="formatUID(this)"
-                  style="text-transform: uppercase"
-                />
-              </div>
-            </div>
-            <div class="input-group">
-              <span class="field-label">หมายเหตุ</span>
-              <div class="input-wrap">
-                <input
-                  type="text"
-                  id="wl-note"
-                  placeholder="เช่น บัตรของ ทดสอบ"
-                />
-              </div>
-            </div>
-            <div class="msg-error" id="wl-err"></div>
-            <div class="modal-footer">
-              <button class="btn-cancel" onclick="closeWhitelistModal()">
-                ยกเลิก
+
+            <!-- Tab เลือก mode -->
+            <div
+              style="display: flex; gap: 8px; margin-bottom: 16px"
+              id="wl-mode-tabs"
+            >
+              <button
+                id="wl-tab-manual"
+                class="btn-sm success"
+                onclick="switchWLMode('manual')"
+                style="flex: 1"
+              >
+                ✏️ กรอก UID เอง
               </button>
               <button
-                class="btn-primary"
-                style="width: auto; padding: 10px 24px"
-                onclick="saveWhitelist()"
+                id="wl-tab-node"
+                class="btn-sm"
+                onclick="switchWLMode('node')"
+                style="flex: 1"
               >
-                บันทึก
+                📡 แตะบัตรจาก REG-01
+              </button>
+            </div>
+
+            <!-- Mode: กรอกเอง -->
+            <div id="wl-manual-section">
+              <div class="input-group">
+                <span class="field-label">UID บัตร</span>
+                <div class="input-wrap">
+                  <input
+                    type="text"
+                    id="wl-uid"
+                    placeholder="XX:XX:XX:XX"
+                    maxlength="11"
+                    oninput="formatUID(this)"
+                    style="text-transform: uppercase"
+                  />
+                </div>
+              </div>
+              <div class="input-group">
+                <span class="field-label">หมายเหตุ</span>
+                <div class="input-wrap">
+                  <input
+                    type="text"
+                    id="wl-note"
+                    placeholder="เช่น บัตรของ ทดสอบ"
+                  />
+                </div>
+              </div>
+              <div class="msg-error" id="wl-err"></div>
+              <div class="modal-footer">
+                <button class="btn-cancel" onclick="closeWhitelistModal()">
+                  ยกเลิก
+                </button>
+                <button
+                  class="btn-primary"
+                  style="width: auto; padding: 10px 24px"
+                  onclick="saveWhitelist()"
+                >
+                  บันทึก
+                </button>
+              </div>
+            </div>
+
+            <!-- Mode: แตะบัตรจาก REG-01 -->
+            <div id="wl-node-section" style="display: none">
+              <div
+                style="
+                  display: flex;
+                  align-items: center;
+                  gap: 8px;
+                  margin-bottom: 12px;
+                "
+              >
+                <div
+                  id="wl-node-dot"
+                  style="
+                    width: 10px;
+                    height: 10px;
+                    border-radius: 50%;
+                    background: #334155;
+                    flex-shrink: 0;
+                  "
+                ></div>
+                <span
+                  id="wl-node-status"
+                  style="font-size: 13px; color: #64748b"
+                  >ยังไม่ได้เชื่อมต่อ</span
+                >
+              </div>
+
+              <div
+                style="
+                  background: #0f172a;
+                  border-radius: 12px;
+                  padding: 16px;
+                  text-align: center;
+                  margin-bottom: 12px;
+                  border: 2px dashed #334155;
+                "
+              >
+                <div
+                  style="font-size: 13px; color: #64748b; margin-bottom: 8px"
+                >
+                  UID บัตรที่แตะ
+                </div>
+                <div
+                  style="
+                    font-size: 18px;
+                    font-weight: 700;
+                    font-family: monospace;
+                    color: #60a5fa;
+                  "
+                  id="wl-node-uid"
+                >
+                  รอแตะบัตร...
+                </div>
+              </div>
+
+              <div
+                id="wl-node-result"
+                style="display: none; margin-bottom: 12px"
+              ></div>
+
+              <div style="display: flex; gap: 8px; margin-bottom: 12px">
+                <button
+                  class="btn-sm success"
+                  onclick="startWLSession()"
+                  style="flex: 1"
+                >
+                  🟢 เริ่ม Session
+                </button>
+                <button
+                  class="btn-sm danger"
+                  onclick="stopWLSession()"
+                  style="flex: 1"
+                >
+                  🔴 หยุด
+                </button>
+              </div>
+
+              <button
+                class="btn-cancel"
+                onclick="closeWhitelistModal()"
+                style="width: 100%"
+              >
+                ← กลับหน้าเมนูหลัก
               </button>
             </div>
           </div>
@@ -3732,6 +4113,7 @@
           Prize: "ระบบฝากแต้ม/แลกแต้ม",
           whitelist: "Card Whitelist",
           "admin-logs": "Log Admin",
+          "change-card": "เปลี่ยนบัตรสมาชิก",
         };
         document.getElementById("page-title").textContent =
           titles[page] || page;
@@ -3750,6 +4132,17 @@
           subscribeTransactions();
         }
         if (page === "register") loadRegisterPage();
+        if (page === "change-card") {
+          ccMember = null;
+          ccNewUID = "";
+          document.getElementById("cc-member-result").style.display = "none";
+          document.getElementById("cc-mqtt-section").style.display = "none";
+          document.getElementById("cc-confirm-section").style.display = "none";
+          document.getElementById("cc-waiting").style.display = "block";
+          document.getElementById("cc-phone").value = "";
+          showMsg("cc-search-err", "");
+          stopCCSession();
+        }
         if (page === "promotions") loadPromotions();
         if (page === "admins") {
           loadAdmins();
@@ -4352,7 +4745,8 @@
       <td><span class="badge ${r.is_active ? "active" : "inactive"}">${r.is_active ? "เปิด" : "ปิด"}</span></td>
       <td style="display:flex;gap:6px;">
         <button class="btn-sm" onclick="editReward(${JSON.stringify(r).replace(/"/g, "&quot;")})">✏️ แก้ไข</button>
-        <button class="btn-sm danger" onclick="toggleReward('${r.id}', ${r.is_active})">${r.is_active ? "ปิด" : "เปิด"}</button>
+        <button class="btn-sm ${r.is_active ? "danger" : "success"}" onclick="toggleReward('${r.id}', ${r.is_active})">${r.is_active ? "ปิด" : "เปิด"}</button>
+        <button class="btn-sm danger" onclick="deleteReward('${r.id}', '${r.name}')">🗑️ ลบ</button>
       </td>
     </tr>`,
           )
@@ -7061,6 +7455,437 @@
           .from("rewards")
           .getPublicUrl(fileName);
         return urlData.publicUrl;
+      }
+
+      async function deleteReward(id, name) {
+        if (!confirm(`ต้องการลบสินค้า "${name}" ออกจากระบบ?`)) return;
+        loading(true);
+        initSB();
+        try {
+          const { error } = await sb.from("rewards").delete().eq("id", id);
+          if (error) throw error;
+          await logAdminAction("delete_reward", `name=${name}`);
+          await loadRewards();
+          showToast(`ลบสินค้า ${name} สำเร็จครับ`);
+        } catch (e) {
+          console.error(e);
+          showToast("ลบไม่สำเร็จ: " + e.message, "#dc2626");
+        } finally {
+          loading(false);
+        }
+      }
+
+      let ccMember = null;
+      let ccNewUID = "";
+      let ccMqttClient = null;
+      let ccSessionTimer = null;
+
+      async function searchMemberChangeCard() {
+        const phone = document.getElementById("cc-phone").value.trim();
+        showMsg("cc-search-err", "");
+        if (phone.length !== 10)
+          return showMsg(
+            "cc-search-err",
+            "กรุณากรอกหมายเลขโทรศัพท์ให้ครบ 10 หลัก",
+          );
+
+        loading(true);
+        initSB();
+        try {
+          const phone9 = phone.startsWith("0") ? phone.slice(1) : phone;
+          const { data, error } = await sb
+            .from("members")
+            .select("id, name, phone, rfid_uid")
+            .or(`phone.eq.${phone},phone.eq.${phone9}`)
+            .limit(1);
+
+          if (error) throw error;
+          if (!data || data.length === 0)
+            return showMsg("cc-search-err", "ไม่พบสมาชิกหมายเลขนี้");
+
+          ccMember = data[0];
+          document.getElementById("cc-member-name").textContent = ccMember.name;
+          document.getElementById("cc-current-uid").textContent =
+            ccMember.rfid_uid || "ยังไม่มีบัตร";
+          document.getElementById("cc-member-result").style.display = "block";
+          document.getElementById("cc-mqtt-section").style.display = "block";
+
+          // reset
+          ccNewUID = "";
+          document.getElementById("cc-uid-display").textContent =
+            "รอแตะบัตร...";
+          document.getElementById("cc-confirm-section").style.display = "none";
+          document.getElementById("cc-waiting").style.display = "block";
+        } catch (e) {
+          showMsg("cc-search-err", e.message);
+        } finally {
+          loading(false);
+        }
+      }
+
+      function startCCSession() {
+        connectCCMQTT();
+        setTimeout(() => {
+          if (ccMqttClient) {
+            ccMqttClient.publish(
+              "vending/reg_ctrl",
+              JSON.stringify({ node_id: "REG-01", cmd: "connect" }),
+              { qos: 1 },
+            );
+            showToast("เริ่ม Session REG-01 แล้วครับ");
+            startCCSessionTimer();
+          }
+        }, 1500);
+      }
+
+      function startCCSessionTimer() {
+        if (ccSessionTimer) clearTimeout(ccSessionTimer);
+        ccSessionTimer = setTimeout(() => {
+          stopCCSession();
+          showToast("หมดเวลา Session ครับ", "#f59e0b");
+        }, 30000);
+      }
+
+      function stopCCSession() {
+        if (ccSessionTimer) {
+          clearTimeout(ccSessionTimer);
+          ccSessionTimer = null;
+        }
+        if (ccMqttClient) {
+          ccMqttClient.publish(
+            "vending/reg_ctrl",
+            JSON.stringify({ node_id: "REG-01", cmd: "disconnect" }),
+            { qos: 1 },
+          );
+          setTimeout(() => {
+            ccMqttClient.end(true);
+            ccMqttClient = null;
+          }, 500);
+        }
+        const dot = document.getElementById("cc-mqtt-dot");
+        const status = document.getElementById("cc-mqtt-status");
+        if (dot) dot.style.background = "#334155";
+        if (status) {
+          status.textContent = "ยังไม่ได้เชื่อมต่อ";
+          status.style.color = "#64748b";
+        }
+      }
+
+      function connectCCMQTT() {
+        if (ccMqttClient) {
+          ccMqttClient.end(true);
+          ccMqttClient = null;
+        }
+
+        const dot = document.getElementById("cc-mqtt-dot");
+        const status = document.getElementById("cc-mqtt-status");
+        dot.style.background = "#f59e0b";
+        status.textContent = "กำลังเชื่อมต่อ...";
+        status.style.color = "#f59e0b";
+
+        const isSecure = location.protocol === "https:";
+        const brokerUrl = isSecure
+          ? "wss://mqtt.tobe-tech.com:8084/mqtt"
+          : "ws://mqtt.tobe-tech.com:8083/mqtt";
+
+        ccMqttClient = mqtt.connect(brokerUrl, {
+          clientId: `admin-cc-${Date.now()}`,
+          username: "gateway_a",
+          password: "wanchai",
+          clean: true,
+          keepalive: 60,
+          reconnectPeriod: 5000,
+        });
+
+        ccMqttClient.on("connect", () => {
+          dot.style.background = "#4ade80";
+          status.textContent = "เชื่อมต่อแล้ว — รอแตะบัตรจาก REG-01";
+          status.style.color = "#4ade80";
+          ccMqttClient.subscribe("vending/register_uid", { qos: 1 });
+        });
+
+        ccMqttClient.on("message", (topic, payload) => {
+          try {
+            const msg = JSON.parse(payload.toString());
+            if (
+              topic === "vending/register_uid" &&
+              msg.machine_id === "REG-01" &&
+              msg.uid
+            ) {
+              handleCCUID(msg.uid);
+            }
+          } catch (e) {}
+        });
+
+        ccMqttClient.on("error", () => {
+          dot.style.background = "#f87171";
+          status.textContent = "เชื่อมต่อไม่ได้";
+          status.style.color = "#f87171";
+        });
+      }
+
+      async function handleCCUID(uid) {
+        if (ccSessionTimer) {
+          clearTimeout(ccSessionTimer);
+          ccSessionTimer = null;
+        }
+
+        // เช็ค whitelist
+        initSB();
+        const { data: whitelist } = await sb
+          .from("card_whitelist")
+          .select("id")
+          .ilike("rfid_uid", uid)
+          .eq("is_active", true)
+          .limit(1);
+
+        if (!whitelist || whitelist.length === 0) {
+          showToast("บัตรนี้ไม่อยู่ใน Whitelist ครับ", "#dc2626");
+          document.getElementById("cc-uid-display").textContent =
+            "บัตรไม่ผ่าน Whitelist!";
+          document.getElementById("cc-uid-display").style.color = "#f87171";
+          return;
+        }
+
+        // เช็คว่าบัตรถูกใช้งานโดยคนอื่นไหม
+        const { data: existing } = await sb
+          .from("members")
+          .select("id, name")
+          .ilike("rfid_uid", uid)
+          .limit(1);
+
+        if (existing && existing.length > 0 && existing[0].id !== ccMember.id) {
+          showToast(`บัตรนี้ถูกใช้โดย ${existing[0].name} แล้วครับ`, "#dc2626");
+          document.getElementById("cc-uid-display").textContent =
+            "บัตรถูกใช้แล้ว!";
+          document.getElementById("cc-uid-display").style.color = "#f87171";
+          return;
+        }
+
+        ccNewUID = uid;
+        document.getElementById("cc-uid-display").textContent = uid;
+        document.getElementById("cc-uid-display").style.color = "#4ade80";
+
+        // แสดงหน้ายืนยัน
+        document.getElementById("cc-sum-name").textContent = ccMember.name;
+        document.getElementById("cc-sum-old-uid").textContent =
+          ccMember.rfid_uid || "ไม่มี";
+        document.getElementById("cc-sum-new-uid").textContent = uid;
+        document.getElementById("cc-confirm-section").style.display = "block";
+        document.getElementById("cc-waiting").style.display = "none";
+
+        stopCCSession();
+      }
+
+      async function saveChangeCard() {
+        showMsg("cc-err", "");
+        document.getElementById("cc-success").style.display = "none";
+
+        if (!ccMember) return showMsg("cc-err", "กรุณาค้นหาสมาชิกก่อน");
+        if (!ccNewUID) return showMsg("cc-err", "กรุณาแตะบัตรใหม่ก่อน");
+
+        loading(true);
+        initSB();
+        try {
+          const { error } = await sb
+            .from("members")
+            .update({ rfid_uid: ccNewUID })
+            .eq("id", ccMember.id);
+          if (error) throw error;
+
+          await logAdminAction(
+            "change_card",
+            `member=${ccMember.name} old_uid=${ccMember.rfid_uid} new_uid=${ccNewUID}`,
+          );
+
+          const successEl = document.getElementById("cc-success");
+          successEl.textContent = `✅ เปลี่ยนบัตร ${ccMember.name} สำเร็จครับ บัตรใหม่: ${ccNewUID}`;
+          successEl.style.display = "block";
+          showToast(`เปลี่ยนบัตร ${ccMember.name} สำเร็จครับ`);
+
+          // reset
+          ccMember.rfid_uid = ccNewUID;
+          document.getElementById("cc-current-uid").textContent = ccNewUID;
+          ccNewUID = "";
+          document.getElementById("cc-uid-display").textContent =
+            "รอแตะบัตร...";
+          document.getElementById("cc-uid-display").style.color = "#60a5fa";
+          document.getElementById("cc-confirm-section").style.display = "none";
+          document.getElementById("cc-waiting").style.display = "block";
+        } catch (e) {
+          showMsg("cc-err", e.message);
+        } finally {
+          loading(false);
+        }
+      }
+
+      let wlMqttClient = null;
+      let wlSessionTimer = null;
+
+      function switchWLMode(mode) {
+        document.getElementById("wl-manual-section").style.display =
+          mode === "manual" ? "block" : "none";
+        document.getElementById("wl-node-section").style.display =
+          mode === "node" ? "block" : "none";
+        document.getElementById("wl-tab-manual").className =
+          `btn-sm ${mode === "manual" ? "success" : ""}`;
+        document.getElementById("wl-tab-node").className =
+          `btn-sm ${mode === "node" ? "success" : ""}`;
+        if (mode === "node") startWLSession();
+        else stopWLSession();
+      }
+
+      function startWLSession() {
+        document.getElementById("wl-node-uid").textContent = "รอแตะบัตร...";
+        document.getElementById("wl-node-uid").style.color = "#60a5fa";
+        document.getElementById("wl-node-result").style.display = "none";
+        connectWLMQTT();
+      }
+
+      function stopWLSession() {
+        if (wlSessionTimer) {
+          clearTimeout(wlSessionTimer);
+          wlSessionTimer = null;
+        }
+        if (wlMqttClient) {
+          wlMqttClient.publish(
+            "vending/reg_ctrl",
+            JSON.stringify({ node_id: "REG-01", cmd: "disconnect" }),
+            { qos: 1 },
+          );
+          setTimeout(() => {
+            wlMqttClient.end(true);
+            wlMqttClient = null;
+          }, 500);
+        }
+        const dot = document.getElementById("wl-node-dot");
+        const status = document.getElementById("wl-node-status");
+        if (dot) dot.style.background = "#334155";
+        if (status) {
+          status.textContent = "ยังไม่ได้เชื่อมต่อ";
+          status.style.color = "#64748b";
+        }
+      }
+
+      function connectWLMQTT() {
+        document.getElementById("wl-node-uid").textContent = "รอแตะบัตร...";
+        document.getElementById("wl-node-uid").style.color = "#60a5fa";
+        document.getElementById("wl-node-result").style.display = "none";
+        document.getElementById("wl-node-result").innerHTML = "";
+        if (wlMqttClient) {
+          wlMqttClient.end(true);
+          wlMqttClient = null;
+        }
+        const dot = document.getElementById("wl-node-dot");
+        const status = document.getElementById("wl-node-status");
+        dot.style.background = "#f59e0b";
+        status.textContent = "กำลังเชื่อมต่อ...";
+        status.style.color = "#f59e0b";
+
+        const isSecure = location.protocol === "https:";
+        const brokerUrl = isSecure
+          ? "wss://mqtt.tobe-tech.com:8084/mqtt"
+          : "ws://mqtt.tobe-tech.com:8083/mqtt";
+
+        wlMqttClient = mqtt.connect(brokerUrl, {
+          clientId: `admin-wl-${Date.now()}`,
+          username: "gateway_a",
+          password: "wanchai",
+          clean: true,
+          keepalive: 60,
+          reconnectPeriod: 5000,
+        });
+
+        wlMqttClient.on("connect", () => {
+          dot.style.background = "#4ade80";
+          status.textContent = "เชื่อมต่อแล้ว — รอแตะบัตรจาก REG-01";
+          status.style.color = "#4ade80";
+          wlMqttClient.subscribe("vending/register_uid", { qos: 1 });
+          wlMqttClient.publish(
+            "vending/reg_ctrl",
+            JSON.stringify({ node_id: "REG-01", cmd: "connect" }),
+            { qos: 1 },
+          );
+        });
+
+        wlMqttClient.on("message", async (topic, payload) => {
+          try {
+            const msg = JSON.parse(payload.toString());
+            if (
+              topic === "vending/register_uid" &&
+              msg.machine_id === "REG-01" &&
+              msg.uid
+            ) {
+              await handleWLUID(msg.uid);
+            }
+          } catch (e) {}
+        });
+
+        wlMqttClient.on("error", () => {
+          dot.style.background = "#f87171";
+          status.textContent = "เชื่อมต่อไม่ได้";
+          status.style.color = "#f87171";
+        });
+      }
+
+      async function handleWLUID(uid) {
+        document.getElementById("wl-node-uid").textContent = uid;
+        document.getElementById("wl-node-uid").style.color = "#60a5fa";
+
+        initSB();
+        // เช็คว่าบัตรมีใน whitelist แล้วไหม
+        const { data: existing } = await sb
+          .from("card_whitelist")
+          .select("id")
+          .ilike("rfid_uid", uid)
+          .limit(1);
+
+        const resultEl = document.getElementById("wl-node-result");
+        resultEl.style.display = "block";
+
+        if (existing && existing.length > 0) {
+          resultEl.innerHTML = `<div style="background:#1c1917;border:1px solid #78350f;border-radius:10px;padding:10px 14px;color:#fbbf24;font-size:13px;">⚠️ บัตร ${uid} มีอยู่ใน Whitelist แล้วครับ</div>`;
+          return;
+        }
+
+        // เพิ่มเข้า whitelist
+        const { error } = await sb.from("card_whitelist").insert({
+          rfid_uid: uid,
+          note: "เพิ่มผ่าน REG-01",
+          is_active: true,
+          created_at: new Date().toISOString(),
+        });
+
+        if (error) {
+          resultEl.innerHTML = `<div style="background:#1c0a0a;border:1px solid #7f1d1d;border-radius:10px;padding:10px 14px;color:#f87171;font-size:13px;">❌ เพิ่มบัตรไม่สำเร็จ: ${error.message}</div>`;
+          return;
+        }
+
+        resultEl.innerHTML = `<div style="background:#052e16;border:1px solid #14532d;border-radius:10px;padding:10px 14px;color:#4ade80;font-size:13px;">✅ เพิ่มบัตร ${uid} สำเร็จแล้วครับ</div>`;
+        document.getElementById("wl-node-uid").style.color = "#4ade80";
+
+        await logAdminAction("add_whitelist", `uid=${uid} via REG-01`);
+        await loadWhitelist();
+
+        // reset รอบัตรใบต่อไป
+        setTimeout(() => {
+          document.getElementById("wl-node-uid").textContent = "รอแตะบัตร...";
+          document.getElementById("wl-node-uid").style.color = "#60a5fa";
+          resultEl.style.display = "none";
+        }, 2000);
+      }
+
+      function closeWhitelistModal() {
+        document.getElementById("whitelist-modal").classList.remove("show");
+        stopWLSession();
+        document.getElementById("wl-edit-id").value = "";
+        document.getElementById("wl-uid").value = "";
+        document.getElementById("wl-note").value = "";
+        document.getElementById("wl-node-uid").textContent = "รอแตะบัตร...";
+        document.getElementById("wl-node-uid").style.color = "#60a5fa";
+        document.getElementById("wl-node-result").style.display = "none";
+        showMsg("wl-err", "");
+        switchWLMode("manual");
       }
     </script>
   </body>
